@@ -1,0 +1,138 @@
+{
+  "name": "DockerFile",
+  "nodes": [
+    {
+      "parameters": {
+        "authentication": "oAuth2",
+        "owner": {
+          "__rl": true,
+          "value": "https://github.com/Woeter69",
+          "mode": "url"
+        },
+        "repository": {
+          "__rl": true,
+          "value": "https://github.com/Woeter69/algo",
+          "mode": "url"
+        },
+        "events": [
+          "push"
+        ],
+        "options": {}
+      },
+      "type": "n8n-nodes-base.githubTrigger",
+      "typeVersion": 1,
+      "position": [
+        0,
+        0
+      ],
+      "id": "d2d271bf-d144-4886-8396-537874a92d3b",
+      "name": "Github Trigger",
+      "webhookId": "599a2156-a69f-4d32-8501-5adc40ddf8f6",
+      "credentials": {
+        "githubOAuth2Api": {
+          "id": "MaXbtvjpEFlQ2Ynf",
+          "name": "GitHub account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 2
+          },
+          "conditions": [
+            {
+              "id": "b638f563-34f9-4fec-b32e-1c50c0649043",
+              "leftValue": "={{ ($json.body.commits || []).reduce(function(acc, commit) { return acc.concat(commit.added || []).concat(commit.modified || []).concat(commit.removed || []); }, []).some(function(filePath) { return filePath.toLowerCase().includes('dockerfile'); }) }}",
+              "rightValue": "",
+              "operator": {
+                "type": "boolean",
+                "operation": "true",
+                "singleValue": true
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.2,
+      "position": [
+        208,
+        0
+      ],
+      "id": "ad59cdae-3cae-41fe-99f1-1333921be7db",
+      "name": "If"
+    },
+    {
+      "parameters": {
+        "authentication": "webhook",
+        "options": {},
+        "embeds": {
+          "values": [
+            {
+              "inputMethod": "json",
+              "json": "={\n  \"title\": \"Dockerfile Updated in `{{ $json.body.repository.name }}`\",\n  \"color\": 3447003,\n  \"description\": \"<@&1423674084096610465> The `Dockerfile` has been modified. Teammates should consider pulling the latest changes and rebuilding the Docker image.\",\n  \"fields\": [\n    {\n      \"name\": \"Committer\",\n      \"value\": \"{{ $json.body.pusher.name }}\",\n      \"inline\": true\n    },\n    {\n      \"name\": \"Branch\",\n      \"value\": \"{{ $json.body.ref.split('/').pop() }}\",\n      \"inline\": true\n    },\n    {\n      \"name\": \"Commit Message\",\n      \"value\": \"{{ $json.body.head_commit.message }}\"\n    }\n  ],\n  \"url\": \"{{ $json.body.head_commit.url }}\"\n}"
+            }
+          ]
+        }
+      },
+      "type": "n8n-nodes-base.discord",
+      "typeVersion": 2,
+      "position": [
+        416,
+        -96
+      ],
+      "id": "cc8389d5-bd58-4e0c-9344-511b87fe6541",
+      "name": "Discord",
+      "webhookId": "a5803860-bd0f-4230-ba86-58dba50ea9a0",
+      "credentials": {
+        "discordWebhookApi": {
+          "id": "T60gxtNf8VnlPKyk",
+          "name": "Discord Webhook account"
+        }
+      }
+    }
+  ],
+  "pinData": {},
+  "connections": {
+    "Github Trigger": {
+      "main": [
+        [
+          {
+            "node": "If",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "If": {
+      "main": [
+        [
+          {
+            "node": "Discord",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": true,
+  "settings": {
+    "executionOrder": "v1"
+  },
+  "versionId": "e108703e-600b-4544-8d40-c7834edfdfe0",
+  "meta": {
+    "templateCredsSetupCompleted": true,
+    "instanceId": "1153e12c2fb8b32f132cfb23825e66138da2c5824605fa8f71c4c81ece07b0cf"
+  },
+  "id": "yFbUvUai4h4JZtQb",
+  "tags": []
+}
